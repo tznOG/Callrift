@@ -1,0 +1,11 @@
+﻿Callrift — VPN para Discord
+
+O instalador reúne o aplicativo, o motor da VPN, as licenças e o Presence.
+
+Antes de atualizar, use Sair no menu da bandeja do Callrift. A VPN será desconectada e as atividades serão encerradas. O instalador não encerra o Discord.
+
+Seus perfis, favoritos e preferências ficam separados da instalação e são preservados ao atualizar e desinstalar.
+
+Se estiver migrando da versão portátil e usava Iniciar com o Windows, desative a opção na cópia antiga e reative na instalada. Mantenha apenas uma cópia configurada para iniciar com o Windows.
+
+O instalador não ativa a VPN nem a inicialização automática sem sua escolha. A permissão para conectar a VPN é solicitada pelo aplicativo.

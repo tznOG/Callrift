@@ -1,0 +1,38 @@
+name: Windows build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Build native Windows app
+        shell: powershell
+        run: ./build.ps1 -Repository $env:GITHUB_REPOSITORY
+      # Native window tests run locally in an interactive Windows session.
+      # CI prepares an unsigned candidate; it does not publish a release.
+      - name: Package candidate
+        shell: powershell
+        run: ./scripts/Package-Release.ps1 -SkipBuild -SkipTests
+      - name: Keep candidate for review
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: Callrift-Windows-x64-candidate
+          path: |
+            dist/Callrift-*-Windows-x64.zip
+            dist/Callrift-Setup-*.exe
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14
