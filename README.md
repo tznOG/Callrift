@@ -44,7 +44,7 @@ O instalador e o pacote portátil ainda não têm assinatura de editor. Ao fecha
 | --- | --- |
 | VPN por processo | Discord Stable, PTB, Canary e Development usam WireGuard; os demais processos saem diretamente |
 | Comparação de perfis | Testa cada túnel separadamente e destaca a melhor resposta HTTPS da rodada |
-| Presence | Catálogo do Discord, busca por nome/ID/apelido, favoritos, seleção de executável e várias atividades |
+| Presence | Catálogo do Discord, busca por nome/ID/apelido, favoritos, seleção de executável e várias atividades para conclusão de missões por ORBS |
 | Inicialização | Pode conectar o último perfil e abrir o Discord depois de verificar o túnel |
 | Aparência | Temas claro e escuro; português, inglês e espanhol |
 | Perfis protegidos | Configurações importadas ficam criptografadas pelo Windows para seu usuário |
