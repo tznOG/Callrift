@@ -56,6 +56,8 @@ namespace Callrift {
         StreamWriter writer;
         Process worker;
         bool disposing;
+        int generation;
+        Task monitor;
         public bool IsActive { get; private set; }
         public bool IsBusy { get; private set; }
         public string ExitIP { get; private set; }
@@ -66,10 +68,13 @@ namespace Callrift {
         public async Task Connect(WireGuardProfile profile) {
             if (IsActive || IsBusy) throw new Exception("Já existe uma conexão em andamento.");
             IsBusy = true; disposing = false;
+            int sessionGeneration=++generation;
             Exception failure = null;
             try {
                 var config = WireGuard.Parse(profile.Configuration);
                 await Task.Run((Action)Engine.Verify);
+                string[] targets=await Task.Run((Func<string[]>)DiscordTargets.Discover);
+                IsolationDriver.VerifyFile(Path.Combine(Path.GetDirectoryName(Engine.PathName),"ProtonVPN.CalloutDriver.sys"));
                 string name = "DiscordVPN-" + Guid.NewGuid().ToString("N");
                 var security = new PipeSecurity(); security.SetAccessRuleProtection(true, false);
                 security.AddAccessRule(new PipeAccessRule(WindowsIdentity.GetCurrent().User, PipeAccessRights.FullControl, AccessControlType.Allow));
@@ -84,20 +89,22 @@ namespace Callrift {
                 var reader = new StreamReader(pipe, Encoding.UTF8, false, 4096, true);
                 int port; var socket = new TcpListener(IPAddress.Loopback, 0); socket.Start(); port = ((IPEndPoint)socket.LocalEndpoint).Port; socket.Stop();
                 string password = Guid.NewGuid().ToString("N");
-                await writer.WriteLineAsync(Json.Write(new WorkerRequest { Configuration = profile.Configuration, ProbePort = port, Password = password }));
+                await writer.WriteLineAsync(Json.Write(new WorkerRequest { Configuration = profile.Configuration, ProbePort = port, Password = password, DiscordPaths=targets }));
                 Task<string> ready = reader.ReadLineAsync();
-                if (await Task.WhenAny(ready, Task.Delay(18000)) != ready) throw new Exception("O motor VPN não iniciou a tempo.");
+                if (await Task.WhenAny(ready, Task.Delay(30000)) != ready) throw new Exception("O motor VPN não iniciou a tempo.");
                 string response = await ready;
                 if (response != "READY") throw new Exception(response != null && response.StartsWith("ERROR ") ? response.Substring(6) : "O motor VPN encerrou durante a inicialização.");
-                Emit("Túnel iniciado. Verificando acesso à internet pela Proton VPN...");
+                Emit("Isolamento por executável configurado. Verificando acesso à internet pela Proton VPN...");
+                monitor=Monitor(reader,pipe,sessionGeneration);
                 // This probe is forced through the WireGuard outbound by its inbound tag.
                 ExitIP = await Task.Run(() => Probe(port, password));
+                if(monitor.IsCompleted || worker.HasExited) throw new Exception("O componente VPN encerrou durante a verificação.");
                 IsActive = true;
-                Emit("Conexão verificada. IP de saída do túnel: " + ExitIP + ". Apenas processos do Discord usam a VPN.");
-                Monitor(reader);
+                ConnectionJournal.Record("vpn_probe_ok");
+                Emit("Túnel verificado. IP de saída: " + ExitIP + ". Regras WFP restritas aos executáveis do Discord; reinicie conexões já abertas.");
             } catch (Exception e) { failure = e; }
             if (failure != null) {
-                await StopInternal(); IsBusy = false;
+                try { await StopInternal(); } finally { IsBusy = false; }
                 System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
             }
             IsBusy = false;
@@ -118,28 +125,31 @@ namespace Callrift {
             }
             throw new Exception("O túnel iniciou, mas não houve acesso à internet por ele. Confira o servidor e gere um novo .conf. " + (last is WebException ? "A verificação de rede expirou ou foi recusada." : ""));
         }
-        async void Monitor(StreamReader reader) {
+        async Task Monitor(StreamReader reader,NamedPipeServerStream sessionPipe,int sessionGeneration) {
             try {
-                while (pipe != null && pipe.IsConnected) {
+                while (sessionPipe.IsConnected && sessionGeneration==generation) {
                     string line = await reader.ReadLineAsync(); if (line == null) break;
+                    if(sessionGeneration!=generation) return;
                     if (line.StartsWith("LOG ")) Emit(line.Substring(4));
                     else if (line.StartsWith("ERROR ")) Emit(line.Substring(6));
                 }
             } catch { }
-            if (!disposing && IsActive) { IsActive = false; Emit("O túnel foi encerrado. Discord está na conexão direta."); if (Lost != null) Lost(); }
+            if (sessionGeneration==generation && !disposing && IsActive) { IsActive = false; ExitIP=null; ConnectionJournal.Record("worker_connection_lost"); Emit("O componente VPN encerrou. O isolamento do Discord foi removido."); if (Lost != null) Lost(); }
         }
         async Task StopInternal() {
             disposing = true; IsActive = false; ExitIP = null;
+            ++generation;
             try { if (writer != null) await writer.WriteLineAsync("STOP"); } catch { }
             // Closing IPC also stops the worker if this app crashes or exits.
             try { if (pipe != null) pipe.Dispose(); } catch { }
             pipe = null; writer = null;
             if (worker != null) {
                 var target = worker; worker = null;
-                await Task.Run(() => { try { target.WaitForExit(6000); } catch { } finally { target.Dispose(); } });
+                bool ended=await Task.Run(() => { try { return target.WaitForExit(10000); } catch(InvalidOperationException) { return true; } finally { target.Dispose(); } });
+                if(!ended) throw new Exception("O componente VPN ainda está encerrando. Não foi possível confirmar a remoção da sessão.");
             }
         }
-        public async Task Disconnect() { if (IsBusy) return; IsBusy = true; try { await StopInternal(); Emit("VPN desconectada. Rotas do túnel removidas pelo motor."); } finally { IsBusy = false; } }
+        public async Task Disconnect() { if (IsBusy) return; IsBusy = true; try { await StopInternal(); Emit("VPN desconectada. Componente de isolamento encerrado."); } finally { IsBusy = false; } }
         public void Dispose() {
             disposing = true;
             try { if (writer != null) writer.WriteLine("STOP"); } catch { }
@@ -159,6 +169,8 @@ namespace Callrift {
         public static int Run(string name) {
             if (!System.Text.RegularExpressions.Regex.IsMatch(name, "^DiscordVPN-[a-f0-9]{32}$")) return 1;
             string directory = null; Process engine = null; ChildJob job = null;
+            AppNetworkIsolation isolation=null; SecondaryTunnelRoutes routes=null; IsolationDriver driver=null;
+            Mutex ownership=null; bool owns=false;
             var gate = new object(); StreamWriter output = null;
             Action<string> send = message => { lock (gate) { try { if (output != null) output.WriteLine(message); } catch { } } };
             try {
@@ -172,7 +184,13 @@ namespace Callrift {
                     var request = Json.Read<WorkerRequest>(requestText);
                     if (request.ProbePort < 1024 || request.ProbePort > 65535 || !System.Text.RegularExpressions.Regex.IsMatch(request.Password ?? "", "^[a-f0-9]{32}$")) throw new Exception("Parâmetros de verificação inválidos.");
                     string config = Json.Write(WireGuard.Parse(request.Configuration).Config(request.ProbePort, request.Password));
+                    string[] targets=DiscordTargets.Validate(request.DiscordPaths);
+                    ownership=new Mutex(false,"Global\\CallriftDiscordNetworkSession");
+                    try { owns=ownership.WaitOne(0); } catch(AbandonedMutexException) { owns=true; }
+                    if(!owns) throw new Exception("Outra sessão do Callrift já controla a VPN.");
+                    SecondaryTunnelRoutes.CheckAvailable();
                     Engine.Verify();
+                    ConnectionJournal.Record("worker_started");
                     directory = Path.Combine(Files.At("runtime"), Guid.NewGuid().ToString("N")); Files.PrivateDirectory(directory);
                     string path = Path.Combine(directory, "tunnel.json"); File.WriteAllText(path, config, new UTF8Encoding(false));
                     AllocConsole(); ShowWindow(GetConsoleWindow(), 0); SetConsoleCtrlHandler(ignore, true);
@@ -199,14 +217,22 @@ namespace Callrift {
                     if (!listening) { lock (failed) { throw new Exception("Falha ao criar o túnel. " + failed.ToString().Replace("\r", " ").Replace("\n", " ")); } }
                     // sing-box has loaded the key; minimize plaintext lifetime on disk.
                     File.Delete(path);
+                    driver=new IsolationDriver(Path.Combine(Path.GetDirectoryName(Engine.PathName),"ProtonVPN.CalloutDriver.sys"));
+                    isolation=new AppNetworkIsolation(targets);
+                    routes=new SecondaryTunnelRoutes();
+                    ConnectionJournal.Record("isolation_configured");
                     send("READY");
                     readySent = true;
                     var command = reader.ReadLineAsync();
-                    while (!command.Wait(250)) { if (engine.HasExited) { send("ERROR O motor VPN encerrou inesperadamente."); break; } }
+                    while (!command.Wait(250)) { if (engine.HasExited) { ConnectionJournal.Record("engine_exited_"+engine.ExitCode); send("ERROR O motor VPN encerrou inesperadamente."); break; } }
+                    ConnectionJournal.Record("shutdown_requested");
                 }
                 return 0;
-            } catch (Exception e) { send("ERROR " + e.Message.Replace("\r", " ").Replace("\n", " ")); return 1; }
+            } catch (Exception e) { ConnectionJournal.Record("worker_failed_"+e.GetType().Name); send("ERROR " + e.Message.Replace("\r", " ").Replace("\n", " ")); return 1; }
             finally {
+                // First remove only our routes, then the dynamic process filters, then the engine.
+                if(routes!=null) routes.Dispose();
+                if(isolation!=null) isolation.Dispose();
                 try {
                     if (engine != null && !engine.HasExited) {
                         GenerateConsoleCtrlEvent(0, 0);
@@ -215,10 +241,14 @@ namespace Callrift {
                 } catch { }
                 if (job != null) job.Dispose();
                 if (engine != null) engine.Dispose();
+                if(driver!=null) driver.Dispose();
                 // The only recursively deleted path is the specific session created above.
                 if (directory != null) try { Directory.Delete(directory, true); } catch { }
+                ConnectionJournal.Record("worker_stopped");
+                if(owns && ownership!=null) ownership.ReleaseMutex();
+                if(ownership!=null) ownership.Dispose();
             }
         }
     }
-    public class WorkerRequest { public string Configuration { get; set; } public int ProbePort { get; set; } public string Password { get; set; } }
+    public class WorkerRequest { public string Configuration { get; set; } public int ProbePort { get; set; } public string Password { get; set; } public string[] DiscordPaths { get; set; } }
 }

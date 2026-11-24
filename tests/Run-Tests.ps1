@@ -1,10 +1,10 @@
-﻿param([switch]$Network)
+﻿param([switch]$Network, [string]$ApplicationDirectory)
 $ErrorActionPreference = 'Stop'
 $taskRoot = Split-Path $PSScriptRoot -Parent
 $framework = Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319'
 $output = Join-Path $PSScriptRoot 'output'
 New-Item -ItemType Directory -Force -Path $output | Out-Null
-$application = Join-Path $taskRoot 'dist\Callrift'
+$application = if ($ApplicationDirectory) { [IO.Path]::GetFullPath($ApplicationDirectory) } else { Join-Path $taskRoot 'dist\Callrift' }
 Copy-Item -LiteralPath (Join-Path $application 'Callrift.exe'),(Join-Path $application 'Callrift.exe.config'),(Join-Path $application 'ActivityHost.exe') -Destination $output -Force
 New-Item -ItemType Directory -Force -Path (Join-Path $output 'engine') | Out-Null
 Copy-Item -LiteralPath (Join-Path $application 'engine\sing-box.exe'),(Join-Path $application 'engine\wintun.dll') -Destination (Join-Path $output 'engine') -Force

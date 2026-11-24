@@ -160,10 +160,14 @@ namespace Callrift {
             var peer = new Dictionary<string,object> { { "address", Host }, { "port", Port }, { "public_key", PublicKey }, { "allowed_ips", AllowedIPs }, { "persistent_keepalive_interval", KeepAlive } };
             if (!String.IsNullOrEmpty(PreSharedKey)) peer["pre_shared_key"] = PreSharedKey;
             var inbounds = new List<object>();
-            if (!probeOnly) inbounds.Add(new { type = "tun", tag = "discord-tun", interface_name = "DiscordVPN", address = new [] { "172.29.255.1/30", "fdfe:dcba:9876::1/126" }, mtu = MTU, auto_route = true, strict_route = false, dns_mode = "disabled", stack = "system" });
+            if (!probeOnly) inbounds.Add(new { type = "tun", tag = "discord-tun", interface_name = AppNetworkIsolation.AdapterName, address = new [] { AppNetworkIsolation.IPv4+"/30", AppNetworkIsolation.IPv6+"/126" }, mtu = MTU, auto_route = false, strict_route = false, dns_mode = "disabled", stack = "gvisor" });
             inbounds.Add(new { type = "http", tag = "vpn-probe", listen = "127.0.0.1", listen_port = probePort, users = new [] { new { username = "probe", password = password } } });
             var rules = new List<object> { new { inbound = new [] { "vpn-probe" }, action = "route", outbound = "proton" } };
-            if (!probeOnly) rules.Add(new { process_name = new [] { "Discord.exe", "DiscordPTB.exe", "DiscordCanary.exe", "DiscordDevelopment.exe" }, action = "route", outbound = "proton" });
+            // WFP selects the signed executable before packets reach this inbound.
+            // A second process-table lookup races the first SYN after WFP redirection.
+            if (!probeOnly) rules.Add(new { inbound = new [] { "discord-tun" }, action = "route", outbound = "proton" });
+            // No other inbound may forward traffic.
+            if (!probeOnly) rules.Add(new { action = "reject" });
             return new {
                 log = new { level = "warn", timestamp = true },
                 dns = new { servers = new [] { new { type = "local", tag = "local-dns" } } },

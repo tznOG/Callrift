@@ -24,7 +24,9 @@ namespace Callrift {
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
             if (args.Length == 2 && args[0] == "--vpn-worker") return VpnWorker.Run(args[1]);
             if (args.Length == 2 && args[0] == "--startup-worker" && (args[1] == "enable" || args[1] == "disable")) return Startup.Worker(args[1] == "enable");
-            if (args.Length == 1 && args[0] == "--uninstall-cleanup") return Startup.CleanupOwned();
+            if (args.Length == 1 && args[0] == "--network-cleanup-worker") return IsolationDriver.CleanupWorker();
+            if (args.Length == 1 && args[0] == "--network-cleanup") return IsolationDriver.CleanupUnused();
+            if (args.Length == 1 && args[0] == "--uninstall-cleanup") return Startup.CleanupOwned()==0 ? IsolationDriver.CleanupUnused() : 1;
             try {
                 if (args.Length >= 2 && args[0] == "--render") return Render(args);
                 if (args.Length == 2 && args[0] == "--diagnostic-idle") return Diagnose(args[1]);
@@ -111,6 +113,7 @@ namespace Callrift {
                 foreach(DictionaryEntry entry in controls) Window.Resources[entry.Key]=entry.Value;
             }
             WindowFrame.Attach(Window);
+            C<TextBlock>("VersionLabel").Text="v"+Updates.DisplayVersion+"  ·  Windows x64";
             using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("BrandMark.png")) {
                 var mark = new BitmapImage(); mark.BeginInit(); mark.CacheOption = BitmapCacheOption.OnLoad;
                 mark.DecodePixelWidth = 128; mark.StreamSource = stream; mark.EndInit(); mark.Freeze();
@@ -457,7 +460,7 @@ namespace Callrift {
         }
         void PromptUpdate() {
             if (disposed || availableUpdate==null) return;
-            if (AppDialog.Confirm(Window,I18n.T("UpdateTitle"),String.Format(I18n.T("UpdateMessage"),Updates.Current.ToString(3),availableUpdate.Version),I18n.T("GetUpdate"))) DownloadLatest();
+            if (AppDialog.Confirm(Window,I18n.T("UpdateTitle"),String.Format(I18n.T("UpdateMessage"),Updates.DisplayVersion,availableUpdate.Version),I18n.T("GetUpdate"))) DownloadLatest();
         }
         async Task CheckForUpdates(bool manual,bool delayed) {
             if (checkingUpdates || disposed) return;

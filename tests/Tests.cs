@@ -87,6 +87,20 @@ static class Tests {
             Test("Draft, prerelease and incomplete uploads never produce an update",()=>{
                 foreach(string json in new[]{ReleaseJson(draft:true),ReleaseJson(prerelease:true),ReleaseJson("v9.8.7-beta"),ReleaseJson().Replace("uploaded","new")}) Yes(Updates.Parse(json,"example/callrift",new Version(1,0,0),false).State==UpdateState.Unpublished);
             });
+            Test("Preview can upgrade to the stable release with the same numeric version",()=>{
+                Yes(Updates.Parse(ReleaseJson(),"example/callrift",new Version(9,8,7,0),false,true).State==UpdateState.Available);
+                Yes(Updates.Parse(ReleaseJson(),"example/callrift",new Version(9,8,7,0),false,false).State==UpdateState.Current);
+                Yes(Updates.Parse(ReleaseJson(),"example/callrift",new Version(9,8,8,0),false,true).State==UpdateState.Current);
+                Yes(Updates.Parse(ReleaseJson(prerelease:true),"example/callrift",new Version(9,8,7,0),false,true).State==UpdateState.Unpublished);
+            });
+            Test("Driver cleanup accepts only its exact manual kernel service identity",()=>{
+                Yes(IsolationDriver.MatchesService(1,3,IsolationDriver.InstalledPath));
+                Yes(IsolationDriver.MatchesService(1,3,@"\??\"+IsolationDriver.InstalledPath));
+                Yes(!IsolationDriver.MatchesService(1,2,IsolationDriver.InstalledPath));
+                Yes(!IsolationDriver.MatchesService(16,3,IsolationDriver.InstalledPath));
+                Yes(!IsolationDriver.MatchesService(1,3,IsolationDriver.InstalledPath+".other"));
+                Yes(!IsolationDriver.MatchesService(1,3,null));
+            });
             Test("Release cannot redirect download to another repository or an executable scheme",()=>{
                 foreach(string host in new[]{"https://evil.example/","file:///C:/","https://github.com/another/"}) {
                     string json=ReleaseJson().Replace("https://github.com/example/",host);
@@ -138,11 +152,40 @@ static class Tests {
             Test("Pre-shared key is supported", () => Yes(WireGuard.Parse(Conf + "PresharedKey = " + PublicKey).PreSharedKey==PublicKey));
             Test("Invalid MTU rejected", () => Reject(() => WireGuard.Parse(Conf.Replace("DNS = 10.2.0.1","MTU = 400"))));
             Test("Invalid keepalive rejected", () => Reject(() => WireGuard.Parse(Conf.Replace("PersistentKeepalive = 25","PersistentKeepalive = -1"))));
-            Test("Process routes never match games or use VPN as final", () => {
+            Test("TUN never captures the default route and rejects unexpected traffic", () => {
                 string json=Json.Write(WireGuard.Parse(Conf).Config(47833,"aabbcc"));
-                Yes(json.Contains("\"final\":\"direct\"") && json.Contains("Discord.exe") && json.Contains("DiscordPTB.exe") && json.Contains("DiscordCanary.exe") && json.Contains("DiscordDevelopment.exe"));
+                Yes(json.Contains("\"inbound\":[\"discord-tun\"]") && !json.Contains("process_name"));
+                Yes(json.Contains("\"auto_route\":false") && !json.Contains("\"auto_route\":true") && json.Contains("\"action\":\"reject\"") && json.Contains("\"stack\":\"gvisor\""));
                 Yes(!json.Contains("domain_suffix") && !json.Contains("hijack-dns") && json.Contains("\"dns_mode\":\"disabled\""));
                 Yes(json.Contains("\"listen\":\"127.0.0.1\"") && json.Contains("\"password\":\"aabbcc\""));
+            });
+            Test("Windows x64 network interop layouts match the native ABI",()=>{
+                var flags=BindingFlags.NonPublic;
+                var filter=typeof(AppNetworkIsolation).GetNestedType("Filter",flags);
+                var condition=typeof(AppNetworkIsolation).GetNestedType("Condition",flags);
+                var context=typeof(AppNetworkIsolation).GetNestedType("Context",flags);
+                var row=typeof(SecondaryTunnelRoutes).GetNestedType("Route",flags);
+                Yes(Marshal.SizeOf(filter)==200 && Marshal.OffsetOf(filter,"Context").ToInt32()==152);
+                Yes(Marshal.SizeOf(condition)==40 && Marshal.SizeOf(context)==88);
+                Yes(Marshal.SizeOf(row)==104 && Marshal.OffsetOf(row,"NextHop").ToInt32()==44 && Marshal.OffsetOf(row,"Metric").ToInt32()==84);
+                var nic=typeof(SecondaryTunnelRoutes).GetNestedType("InterfaceRow",flags);
+                Yes(Marshal.SizeOf(nic)==168 && Marshal.OffsetOf(nic,"Forwarding").ToInt32()==41 && Marshal.OffsetOf(nic,"DisableDefaultRoutes").ToInt32()==166);
+            });
+            Test("An empty process list can never create a global WFP redirect",()=>{
+                Reject(()=>new AppNetworkIsolation(new string[0])); Reject(()=>new AppNetworkIsolation(new[]{""}));
+            });
+            Test("Discord selection rejects another signed publisher and an unsigned renamed program",()=>{
+                string fake=Path.Combine(root,"Discord.exe");
+                File.Copy(typeof(Tests).Assembly.Location,fake,true); Reject(()=>DiscordTargets.Validate(new[]{fake}));
+                File.Copy(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System),"cmd.exe"),fake,true); Reject(()=>DiscordTargets.Validate(new[]{fake}));
+                Reject(()=>DiscordTargets.Validate(new[]{"Discord.exe"})); Reject(()=>DiscordTargets.Validate(new string[0]));
+            });
+            Test("Connection journal persists bounded event identifiers without raw messages",()=>{
+                ConnectionJournal.Record("worker_started"); ConnectionJournal.Record("PrivateKey = should-not-appear");
+                string path=Path.Combine(Files.Root,"diagnostics","vpn-events.log");
+                string data=File.ReadAllText(path); Yes(data.Contains("worker_started") && !data.Contains("PrivateKey"));
+                File.WriteAllText(path,new string('x',66000)); ConnectionJournal.Record("worker_stopped");
+                Yes(new FileInfo(path).Length<1000 && File.Exists(Path.Combine(Path.GetDirectoryName(path),"vpn-events.previous.log")));
             });
             Test("Generated config validates with actual sing-box 1.14.4", () => {
                 string path=Path.Combine(root,"validation.json"); File.WriteAllText(path,Json.Write(WireGuard.Parse(Conf).Config(47833,"aabbcc")),new UTF8Encoding(false));

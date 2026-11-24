@@ -1,0 +1,93 @@
+﻿{
+    "Commit":  "a4e78deae2e123ee0ac1c48cc69a66647c5228da",
+    "Files":  [
+                  {
+                      "Path":  "LICENSE",
+                      "Sha256":  "8b1ba204bb69a0ade2bfcf65ef294a920f6bb361b317dba43c7ef29d96332b9b"
+                  },
+                  {
+                      "Path":  "README.md",
+                      "Sha256":  "5274fdfcf2e98b7e73114c92ad5d993c52b6859942c9c110c71bf973b8b7a245"
+                  },
+                  {
+                      "Path":  "src/ProtonVPN.CalloutDriver/.gitignore",
+                      "Sha256":  "5a0a4c68910d91eeece68c55d459a68405b8f0f5946c45479af4e3c59375df16"
+                  },
+                  {
+                      "Path":  "src/ProtonVPN.CalloutDriver/Callout.cpp",
+                      "Sha256":  "5fc7fe07f0249a8f81b774a4e0c4b03893039072c08a497ac132db9d8a677e47"
+                  },
+                  {
+                      "Path":  "src/ProtonVPN.CalloutDriver/Callout.h",
+                      "Sha256":  "2e81053d6504df93b52526ca6772b5447f627a4156274aee61cb143a4bc199ee"
+                  },
+                  {
+                      "Path":  "src/ProtonVPN.CalloutDriver/Device.cpp",
+                      "Sha256":  "71a7239dec76fb4c77623d4037ab3f74d7afcc933074a783b0ca0c5bd1229a2b"
+                  },
+                  {
+                      "Path":  "src/ProtonVPN.CalloutDriver/Device.h",
+                      "Sha256":  "b93c770aa5a6d7b6b04ede110d649ae312b80a561e7f330a2e04d8f2c16da869"
+                  },
+                  {
+                      "Path":  "src/ProtonVPN.CalloutDriver/Driver.cpp",
+                      "Sha256":  "5852c9c2d336f4f5ff2ad00d89a84247293a8ff1d6ad623b4ed429c5052f15dd"
+                  },
+                  {
+                      "Path":  "src/ProtonVPN.CalloutDriver/Driver.h",
+                      "Sha256":  "1b7f6fd8dd738d7645e4b289fe1d43727af74ba49b426160f5af3cadf22f8d5c"
+                  },
+                  {
+                      "Path":  "src/ProtonVPN.CalloutDriver/ProtonVPN.CalloutDriver.inf",
+                      "Sha256":  "c5580aa7dbfa6020c71080b7181496463c41fd9a9b7b4f2262923211c3086aa4"
+                  },
+                  {
+                      "Path":  "src/ProtonVPN.CalloutDriver/ProtonVPN.CalloutDriver.vcxproj",
+                      "Sha256":  "498834f43d16ed7a1bcab53803038becc91c772abe7528bfb81cbca8be708a0c"
+                  },
+                  {
+                      "Path":  "src/ProtonVPN.CalloutDriver/ProtonVPN.CalloutDriver.vcxproj.filters",
+                      "Sha256":  "f6badf25a52c7b4b9f18d4ec5728fb11db4d63936b58745bf19b443348185629"
+                  },
+                  {
+                      "Path":  "src/ProtonVPN.CalloutDriver/Public.h",
+                      "Sha256":  "b8de57cd38c24436dc000bad98a6736d04c2341039770945fbce12af880d3f3a"
+                  },
+                  {
+                      "Path":  "src/ProtonVPN.CalloutDriver/README.md",
+                      "Sha256":  "b74edb67babb973aa007934936fb5083d9740e26c3295554dafd7fcbf6533725"
+                  },
+                  {
+                      "Path":  "src/ProtonVPN.CalloutDriver/Resources/VersionInfo.rc",
+                      "Sha256":  "d2c1ab0e7382e01b3b3757c3a212194e2c883e63fbba2e396d2b46cf0c75d065"
+                  },
+                  {
+                      "Path":  "src/ProtonVPN.CalloutDriver/Trace.h",
+                      "Sha256":  "abc512d3b701fb6bd715166569d4a85ca5bf728c0eb1762bd9d67344282ff30e"
+                  },
+                  {
+                      "Path":  "src/ProtonVPN.CalloutDriver/arm64.ddf",
+                      "Sha256":  "bb5ca003ddaf9db314250ac67813045c6da8377e904d95343d70ab6028fa4c8e"
+                  },
+                  {
+                      "Path":  "src/ProtonVPN.CalloutDriver/setup.inf",
+                      "Sha256":  "7554d84108e3fd76084b1d38c9a5beb0800de3daa360087c01bcb17b07f226b4"
+                  },
+                  {
+                      "Path":  "src/ProtonVPN.CalloutDriver/setup.rpt",
+                      "Sha256":  "520ca5c2fdfc810eb9a8b4331de2539a98931336426b55068ba58607c221ac37"
+                  },
+                  {
+                      "Path":  "src/ProtonVPN.CalloutDriver/x64.ddf",
+                      "Sha256":  "5cf56b05163f0cb2ca82c38aa5882d872866b2a36a4ceb651dda803daf97acd0"
+                  },
+                  {
+                      "Path":  "BUILD.md",
+                      "Sha256":  "bc1f3be9da03212ec5d5e29ac88f443803d224e206decd5654f9d0f44b16ca6f"
+                  },
+                  {
+                      "Path":  "CONTRIBUTING.md",
+                      "Sha256":  "7ff8e1cd9e4f56031f0358546e11b38f962f4d2208f500709c1aeb92d28eeb2b"
+                  }
+              ]
+}

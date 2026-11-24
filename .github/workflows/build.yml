@@ -33,6 +33,7 @@ jobs:
           path: |
             dist/Callrift-*-Windows-x64.zip
             dist/Callrift-Setup-*.exe
+            dist/Callrift-*-source.zip
             dist/SHA256SUMS.txt
           if-no-files-found: error
           retention-days: 14

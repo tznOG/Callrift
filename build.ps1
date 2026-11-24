@@ -1,9 +1,9 @@
-﻿param([switch]$SkipEngine, [string]$Repository)
+﻿param([switch]$SkipEngine, [string]$Repository, [string]$OutputDirectory)
 $ErrorActionPreference = 'Stop'
 $taskRoot = $PSScriptRoot
 $framework = Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319'
 $compiler = Join-Path $framework 'csc.exe'
-$output = Join-Path $taskRoot 'dist\Callrift'
+$output = if ($OutputDirectory) { [IO.Path]::GetFullPath($OutputDirectory) } else { Join-Path $taskRoot 'dist\Callrift' }
 New-Item -ItemType Directory -Force -Path $output,(Join-Path $output 'engine'),(Join-Path $output 'licenses') | Out-Null
 if (!(Test-Path -LiteralPath $compiler)) { throw '.NET Framework 4.8 x64 é necessário para compilar.' }
 $refs = @('System.dll','System.Core.dll','System.Security.dll','System.Web.Extensions.dll','System.Net.Http.dll','System.Xml.dll','System.Drawing.dll','System.Windows.Forms.dll','WPF\WindowsBase.dll','WPF\PresentationCore.dll','WPF\PresentationFramework.dll','System.Xaml.dll') | ForEach-Object { '/reference:' + (Join-Path $framework $_) }
@@ -22,6 +22,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Falha ao compilar Callrift.' }
 if ($LASTEXITCODE -ne 0) { throw 'Falha ao compilar ActivityHost.' }
 Copy-Item -LiteralPath (Join-Path $taskRoot 'src\Callrift.exe.config') -Destination $output -Force
 if (!$SkipEngine) { & (Join-Path $taskRoot 'scripts\Get-Engine.ps1') -OutputDirectory (Join-Path $output 'engine') }
+& (Join-Path $taskRoot 'scripts\Get-IsolationDriver.ps1') -OutputDirectory (Join-Path $output 'engine')
 Copy-Item -LiteralPath (Join-Path $taskRoot 'LICENSE'),(Join-Path $taskRoot 'THIRD-PARTY-NOTICES.md') -Destination (Join-Path $output 'licenses') -Force
 Copy-Item -LiteralPath (Join-Path $taskRoot 'licenses\Disactivity-MIT.txt') -Destination (Join-Path $output 'licenses\Disactivity-MIT.txt') -Force
 Copy-Item -LiteralPath (Join-Path $taskRoot 'licenses\Inno-Setup-LICENSE.txt') -Destination (Join-Path $output 'licenses') -Force
