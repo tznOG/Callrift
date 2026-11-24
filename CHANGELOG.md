@@ -1,5 +1,18 @@
 # Notas de versão
 
+## 1.4.0-preview.1 — Isolamento do Discord
+
+- Seleção dos executáveis oficiais do Discord pelo Windows Filtering Platform, com assinatura validada antes de conectar.
+- Adaptador privado sem captura global: os outros aplicativos mantêm suas rotas existentes e não atravessam o motor VPN.
+- TCP e UDP pelo WireGuard, preservando o DNS e as configurações das demais interfaces.
+- Encerramento com remoção das regras, do serviço manual e da cópia protegida do driver. Limpeza de componentes remanescentes pela desinstalação.
+- Supervisão de sessão corrigida para evitar que o monitor de uma conexão antiga altere uma conexão nova.
+- Diagnóstico local limitado a horários e identificadores de eventos, com rotação.
+- Instalador e portátil para a prévia, com fontes e licenças dos componentes incluídos.
+- Aviso preparado para a futura versão estável 1.4.0. Pré-releases continuam fora da atualização automática.
+
+**Download manual:** esta versão é uma prévia. Saia da versão anterior pela bandeja antes de atualizar; perfis, favoritos e preferências são preservados.
+
 ## 1.3.0 — Instalador e atualizações
 
 - Instalador por usuário com atalhos, atualização no mesmo local e desinstalador.

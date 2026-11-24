@@ -1,5 +1,14 @@
 # Publicar o Callrift no GitHub
 
+## Prévia 1.4.0-preview.1
+
+A prévia usa a tag `v1.4.0-preview.1` e deve ser marcada como **Set as a pre-release**, sem substituir a release estável. Use o título **Callrift 1.4.0-preview.1 — VPN somente para o Discord** e o corpo de `docs/releases/v1.4.0-preview.1.md`.
+
+O empacotamento aceita versões estáveis e o sufixo `-preview.N`. Anexe o instalador, o ZIP portátil, o ZIP de fontes e `SHA256SUMS.txt`. Todos são gerados por `scripts/Package-Release.ps1`. Para preservar builds anteriores, use `-ApplicationDirectory` e `-OutputDirectory` com pastas separadas.
+
+A prévia tem download manual. `releases/latest`, consultado pelo aplicativo, continua apontando para a última versão estável. A prévia reconhece a futura versão estável 1.4.0 como atualização.
+
+
 O projeto está preparado como **arquivos locais, sem repositório Git ativo**. Commits e tags ficam para depois da revisão, com a identidade que você informar. Nenhum repositório remoto, push ou release foi criado. Os passos abaixo são um roteiro; execute os comandos de Git somente quando decidir prosseguir.
 
 O repositório escolhido é `tznOG/Callrift`. Confira que está conectado à conta correta antes de criar ou enviar o projeto. O README usa links relativos para Releases e Issues, por isso acompanha o repositório escolhido.
@@ -96,8 +105,8 @@ Em **Settings → Security**, ative o recebimento privado de relatos de vulnerab
 
 1. Abra **Releases → Draft a new release**.
 2. Selecione a tag já enviada **v1.3.0**.
-3. Título: **Callrift 1.3.0 — VPN para Discord**
-4. Cole o conteúdo de `docs/releases/v1.3.0.md` na descrição.
+3. Título: **Callrift 1.3.0 — Instalador e atualizações**
+4. Cole o conteúdo de `docs/releases/v1.3.0.md` na descrição. O arquivo começa pelo parágrafo de apresentação; não repita o título da release no corpo.
 5. Anexe `dist/Callrift-Setup-1.3.0.exe`, `dist/Callrift-1.3.0-Windows-x64.zip` e `dist/SHA256SUMS.txt`.
 6. Clique em **Save draft** para revisar antes de tornar público.
 
