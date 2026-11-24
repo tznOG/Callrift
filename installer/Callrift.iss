@@ -13,11 +13,15 @@
 #ifndef OutputDir
   #define OutputDir "..\dist"
 #endif
+#ifndef AppSessionMutex
+  #define AppSessionMutex "Local\Callrift-Installer"
+#endif
 
 [Setup]
 AppId={#AppIdentity}
 AppName={#AppName}
 AppVersion={#AppVersion}
+VersionInfoVersion={#GetFileVersion(PackageDir + "\Callrift.exe")}
 AppVerName={#AppName} {#AppVersion}
 AppPublisher=Callrift contributors
 AppComments=VPN para Discord + Presence
@@ -36,7 +40,7 @@ Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
 WizardResizable=yes
-AppMutex=Local\Callrift-Installer
+AppMutex={#AppSessionMutex}
 CloseApplications=no
 RestartApplications=no
 SetupMutex=Local\Callrift-Setup
@@ -77,7 +81,7 @@ function InitializeUninstall: Boolean;
 var
   ExitCode: Integer;
 begin
-  if CheckForMutexes('Local\Callrift-Installer') then begin
+  if CheckForMutexes('{#AppSessionMutex}') then begin
     SuppressibleMsgBox('Saia do Callrift pelo menu da bandeja antes de desinstalar.', mbError, MB_OK, IDOK);
     Result := False;
     Exit;
@@ -87,6 +91,6 @@ begin
     Result := Exec(ExpandConstant('{app}\Callrift.exe'), '--uninstall-cleanup', ExpandConstant('{app}'), SW_HIDE, ewWaitUntilTerminated, ExitCode);
     if Result then Result := ExitCode = 0;
     if not Result then
-      SuppressibleMsgBox('Não foi possível desativar a inicialização desta instalação. Abra o Callrift, desative Iniciar com o Windows e tente novamente.', mbError, MB_OK, IDOK);
+      SuppressibleMsgBox('Não foi possível concluir a limpeza da inicialização ou do componente de rede. Encerre o Callrift e aceite a confirmação de administrador quando solicitada. Depois tente novamente.', mbError, MB_OK, IDOK);
   end;
 end;
