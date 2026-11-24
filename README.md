@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="../../releases/tag/v1.4.0-preview.1">Baixar a prévia para Windows</a> ·
+  <a href="../../releases/latest">Baixar para Windows</a> ·
   <a href="docs/USAGE.md">Guia de uso</a> ·
   <a href="../../issues">Reportar um problema</a>
 </p>
@@ -28,12 +28,12 @@ A interface usa WPF e componentes nativos do Windows. Sem navegador embarcado, s
 
 ## Começar a usar
 
-**1.4.0-preview.1:** prévia do novo isolamento por aplicativo. O download é manual; os avisos automáticos continuam acompanhando somente versões estáveis.
+**1.4.0:** novo isolamento por aplicativo, disponível também pelo aviso de atualização do Callrift 1.3.0 ou mais recente.
 
 Você precisa de **Windows 10 ou 11 x64**, **.NET Framework 4.8**, Discord desktop e um arquivo WireGuard `.conf` gerado na sua conta Proton VPN.
 
-1. Na [release da prévia](../../releases/tag/v1.4.0-preview.1), baixe **`Callrift-Setup-1.4.0-preview.1.exe`** para instalar. Ele cria o atalho no menu Iniciar e aparece na lista de aplicativos do Windows. O atalho na área de trabalho é opcional.
-2. Abra o Callrift pelo menu Iniciar. Se preferir usar sem instalar, baixe **`Callrift-1.4.0-preview.1-Windows-x64.zip`**, extraia a pasta inteira e abra `Callrift.exe`. Mantenha `engine` e `ActivityHost.exe` junto dele.
+1. Na [release atual](../../releases/latest), baixe **`Callrift-Setup-1.4.0.exe`** para instalar. Ele cria o atalho no menu Iniciar e aparece na lista de aplicativos do Windows. O atalho na área de trabalho é opcional.
+2. Abra o Callrift pelo menu Iniciar. Se preferir usar sem instalar, baixe **`Callrift-1.4.0-Windows-x64.zip`**, extraia a pasta inteira e abra `Callrift.exe`. Mantenha `engine` e `ActivityHost.exe` junto dele.
 3. Clique em **Gerar .conf na Proton VPN**. Na Proton, abra **Downloads → WireGuard configuration**, escolha um servidor e baixe o arquivo. Veja o [guia oficial da Proton](https://protonvpn.com/support/wireguard-configurations).
 4. Use **Importar .conf**, selecione o perfil e clique em **Conectar VPN**. O Windows pedirá autorização para criar o túnel.
 5. Se o Discord estiver aberto, o Callrift pedirá permissão para reiniciá-lo. Autorizar interrompe a chamada atual e reabre o mesmo canal do Discord com novas conexões.
@@ -72,7 +72,7 @@ O módulo usa auxiliares locais; não baixa nem executa o jogo de verdade. A det
 
 ## Antes de conectar
 
-Nesta prévia, o Windows seleciona os executáveis oficiais do Discord antes de encaminhar suas conexões ao adaptador privado. Os outros aplicativos continuam usando suas rotas existentes, sem atravessar o motor da VPN. O DNS do Windows é preservado. Veja o [funcionamento do isolamento e os testes](docs/NETWORK-ISOLATION.md).
+Nesta versão, o Windows seleciona os executáveis oficiais do Discord antes de encaminhar suas conexões ao adaptador privado. Os outros aplicativos continuam usando suas rotas existentes, sem atravessar o motor da VPN. O DNS do Windows é preservado. Veja o [funcionamento do isolamento e os testes](docs/NETWORK-ISOLATION.md).
 
 Esta versão **não tem kill switch nem reconexão automática**. Se o túnel cair ou o app for encerrado, o Discord pode usar a conexão normal. Discord no navegador e clientes alternativos não fazem parte das regras. A disponibilidade de funções do Discord depende da conta, da plataforma e da rota utilizada.
 

@@ -1,5 +1,13 @@
 # Notas de versão
 
+## 1.4.0 — Atualização pelo aplicativo
+
+- Publicação no canal estável, reconhecida pelo aviso de atualização da 1.3.0 e da 1.4.0-preview.1.
+- Instalador e portátil com os nomes esperados pelo atualizador, preservando perfis, favoritos e configurações.
+- Mantém o isolamento por aplicativo e as correções da prévia descritos abaixo.
+
+Para receber o aviso, abra o Callrift com a verificação automática ativada ou use **Configurações → Atualizações → Verificar agora**. O botão oferece o download; a instalação continua sob controle do usuário.
+
 ## 1.4.0-preview.1 — Isolamento do Discord
 
 - Seleção dos executáveis oficiais do Discord pelo Windows Filtering Platform, com assinatura validada antes de conectar.

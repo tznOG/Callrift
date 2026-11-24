@@ -1,4 +1,6 @@
-# Validação do Callrift 1.4.0-preview.1
+# Validação do Callrift 1.4.0
+
+A 1.4.0 mantém o código de rede validado na 1.4.0-preview.1. Esta publicação altera a identificação de versão e o canal da release para disponibilizar o aviso nos clientes existentes.
 
 ## Aplicativo
 

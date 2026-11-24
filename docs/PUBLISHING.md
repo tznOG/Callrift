@@ -1,5 +1,11 @@
 # Publicar o Callrift no GitHub
 
+## Versão estável 1.4.0
+
+Use a tag `v1.4.0`, o título **Callrift 1.4.0 — VPN somente para o Discord** e o corpo de `docs/releases/v1.4.0.md`. Publique como versão estável e marque como **Latest**. Anexe `Callrift-Setup-1.4.0.exe`, `Callrift-1.4.0-Windows-x64.zip`, `Callrift-1.4.0-source.zip` e `SHA256SUMS.txt`.
+
+O aviso da 1.3.0 exige uma tag numérica, uma release estável e os nomes exatos dos downloads. Apenas desmarcar a prévia mantendo `-preview.1` na tag não ativa o aviso. Confira `releases/latest` e a detecção pelo cliente anterior depois de publicar.
+
 ## Prévia 1.4.0-preview.1
 
 A prévia usa a tag `v1.4.0-preview.1` e deve ser marcada como **Set as a pre-release**, sem substituir a release estável. Use o título **Callrift 1.4.0-preview.1 — VPN somente para o Discord** e o corpo de `docs/releases/v1.4.0-preview.1.md`.

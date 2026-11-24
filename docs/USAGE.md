@@ -8,7 +8,7 @@ Aplicativo nativo WPF com WireGuard da Proton VPN e **Presence**, nosso módulo 
 
 Escolha um dos downloads da release:
 
-- **Instalador:** execute `Callrift-Setup-1.4.0-preview.1.exe`. A instalação é por usuário, em `%LOCALAPPDATA%\Programs\Callrift` por padrão. Cria um atalho no menu Iniciar e oferece um atalho opcional na área de trabalho. O Windows permite desinstalar pela lista de aplicativos.
+- **Instalador:** execute `Callrift-Setup-1.4.0.exe`. A instalação é por usuário, em `%LOCALAPPDATA%\Programs\Callrift` por padrão. Cria um atalho no menu Iniciar e oferece um atalho opcional na área de trabalho. O Windows permite desinstalar pela lista de aplicativos.
 - **Portátil:** extraia a pasta **inteira** `Callrift` e execute `Callrift.exe`. Mantenha o motor e o auxiliar de atividades nas subpastas originais. Os dados permanecem no diretório do usuário do Windows, também na versão portátil.
 
 Ambas as distribuições ainda não têm assinatura de editor comercial. O instalador não ativa a VPN nem a inicialização com Windows automaticamente.
@@ -25,7 +25,7 @@ O botão principal alterna entre **Conectar** e **Desconectar**. Fechar a janela
 
 ## Avisos de atualização
 
-A **1.4.0-preview.1** é uma prévia com download manual. Ela não é oferecida automaticamente a usuários da versão estável. A prévia continua verificando as releases estáveis e poderá oferecer a 1.4.0 final quando estiver disponível.
+A **1.4.0** é oferecida pelo aviso de atualização da versão 1.3.0 e da prévia 1.4.0-preview.1. Abra o aplicativo ou use **Configurações → Atualizações → Verificar agora**. A verificação ao abrir precisa estar ativada para mostrar o aviso automaticamente.
 
 O Callrift 1.3.0 ou mais recente consulta `https://api.github.com/repos/tznOG/Callrift/releases/latest` uma vez ao abrir, após um breve atraso. Se a release estável tiver uma versão maior e um arquivo compatível já enviado, mostra um aviso e um banner. A instalada oferece o instalador; a portátil oferece o ZIP. **Baixar atualização** abre o arquivo no navegador; o app não executa arquivos baixados.
 
